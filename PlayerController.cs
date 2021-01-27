@@ -6,57 +6,70 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speed = 5;
-    public TextMeshProUGUI countText;
-    public GameObject winTextObject;
-
+    public float speed = 10;
+    // Start is called before the first frame update
     private Rigidbody rb;
     private int count;
+    private int points;
     private float movementX;
     private float movementY;
+    private Vector3 OriginalPos;
+    public TextMeshProUGUI CountText;
+    public GameObject WinTextObject;
+    public GameObject LoseTextObject;
 
-    // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        rb = GetComponent <Rigidbody>();
         count = 0;
-
-        SetCountText();
-        winTextObject.SetActive(false);
+        points = 0;
+        WinTextObject.SetActive(false);
+        LoseTextObject.SetActive(false);
+        setCountText();
+        OriginalPos = transform.position;
+        /*if (SystemInfo.deviceType == DeviceType.Handheld)
+        {
+            Input.gyro.enabled = true;
+        }*/
     }
 
-    private void OnMove(InputValue movementValue)
-    {
-        Vector2 movementVector = movementValue.Get<Vector2>();
-
+    void OnMove(InputValue movementValue){
+        Vector2 movementVector = movementValue.Get < Vector2 >();
         movementX = movementVector.x;
         movementY = movementVector.y;
+        //movementX = Input.acceleration.x;
+        //movementY = -Input.acceleration.y;
     }
 
-    private void SetCountText()
-    {
-        countText.text = "Count:" + count.ToString();
-        if (count>=12)
-        {
-            winTextObject.SetActive(true);
+    void setCountText(){
+        CountText.text = "Points: " + points.ToString();
+        if(count >= 8 && points == 8){
+            WinTextObject.SetActive(true);
+        }else{
+            if(count >= 8 && points < 8){
+                LoseTextObject.SetActive(true);
+            }
         }
     }
 
-    private void FixedUpdate()
-    {
-        Vector3 movement = new Vector3(movementX, 0.0f, movementY);
-
+    void FixedUpdate(){
+        Vector3 movement = new Vector3(movementX,0.0f, movementY);
         rb.AddForce(movement * speed);
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.CompareTag("PickUp")) 
-        {
+    private void OnTriggerEnter(Collider other){
+        if(other.gameObject.CompareTag("PickUp")){
             other.gameObject.SetActive(false);
-            count = count + 1;
-
-            SetCountText();
+            count++;
+            points++;
+            setCountText();
+        }
+        if(other.gameObject.CompareTag("Enemigo")){
+            transform.position = OriginalPos;
+            if(points > 0){
+                points--;
+            }
+            setCountText();
         }
     }
 }
